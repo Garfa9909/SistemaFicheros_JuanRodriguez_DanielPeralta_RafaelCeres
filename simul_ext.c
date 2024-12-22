@@ -81,7 +81,7 @@ int main()
 
 	   if (strcmp(orden,"dir")==0) 
       {
-         //Directorio(&directorio,&ext_blq_inodos);
+         Directorio(&directorio,&ext_blq_inodos);
       }
 
       else if (strcmp(orden,"bytemaps")==0) 
@@ -176,4 +176,41 @@ void PrintBytemaps(EXT_BYTE_MAPS *ext_bytemaps)
       printf("%d ", (*ext_bytemaps).bmap_inodos[i] );
    }
    printf("\n");
+}
+
+void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
+{
+
+   printf("Ficheros :\n");
+    
+   for (int i = 1; i < MAX_FICHEROS; i++) 
+   {
+      //Comprobamos que el inodo sea valido, es decir que no este vacio
+      if (directorio[i].dir_inodo != NULL_INODO)  
+      {
+
+         //Accedemos al inodo de cada archivo, lugar en el que estan los metadatos del archivo (tamanio,nombre...)
+         EXT_SIMPLE_INODE *inodo = &inodos->blq_inodos[directorio[i].dir_inodo];
+         
+         //Imprimimos los datos 
+         printf("Nombre: %s\t", directorio[i].dir_nfich);
+         printf("Tamaño: %d\t", inodo->size_fichero);    
+         printf("Inodo: %d\t", directorio[i].dir_inodo);  
+        
+
+         printf("Bloques: ");
+
+         //Recorre los bloques
+         for (int j = 0; j < MAX_NUMS_BLOQUE_INODO; j++) 
+         {
+            //Comprueba que el bloque no este vacio
+            if (inodo->i_nbloque[j] != NULL_BLOQUE)
+            {
+               printf("%d ", inodo->i_nbloque[j]); 
+            }
+            
+         }
+         printf("\n");
+      }
+   }
 }
