@@ -255,3 +255,19 @@ void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *
       }
    }  
 }
+
+int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombre)  //Devuelve 1 si existe y 0 si no
+{
+   int encontrado = -1;
+
+   //Recorre los nombres hasta que lo encuentre. Si no lo encuentra, se queda en -1
+   for(int i = 0; i < sizeof(directorio); i++)
+   {
+      if(strcmp(directorio[i].dir_nfich, nombre) == 0)
+      {
+         encontrado = i;
+      }
+   }
+
+   return encontrado;
+}
