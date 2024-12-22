@@ -256,7 +256,7 @@ void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *
    }  
 }
 
-int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombre)  //Devuelve 1 si existe y 0 si no
+int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombre)  //Devuelve el índice del fichero en el directorio si lo encuentra, y 0 si no
 {
    int encontrado = -1;
 
