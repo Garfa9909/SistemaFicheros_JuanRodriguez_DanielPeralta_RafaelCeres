@@ -12,7 +12,7 @@ int comprobarComando(char *strcomando, char *orden, char *argumento1, char *argu
 void leeSuperBloque(EXT_SIMPLE_SUPERBLOCK *psup);
 int buscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombre);
 void verDirectorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos);
-int renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombreantiguo, char *nombrenuevo);
+void renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombreantiguo, char *nombrenuevo);
 int imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_DATOS *memdatos, char *nombre);
 void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, char *nombre,  FILE *fich);
 int copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, EXT_DATOS *memdatos, char *nombreorigen, char *nombredestino,  FILE *fich);
@@ -81,6 +81,11 @@ int main()
       else if(strcmp(orden, "remove")==0)
       {
          borrar(directorio, &ext_blq_inodos, &ext_bytemaps, &ext_superblock, argumento1, fent);
+      }
+      else if (strcmp(orden, "rename")==0)
+      {
+         renombrar(directorio, &ext_blq_inodos, argumento1, argumento2);
+         grabardatos = 1;
       }
       // Escritura de metadatos en comandos rename, remove, copy     
       //Grabarinodosydirectorio(&directorio,&ext_blq_inodos,fent);
@@ -201,6 +206,42 @@ void verDirectorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
    }
 }
 
+int buscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombre)  //Devuelve el índice del fichero en el directorio si lo encuentra, y -1 si no
+{
+   int encontrado = -1;
+   //Recorre los nombres hasta que lo encuentre. Si no lo encuentra, se queda en -1
+   for(int i = 0; (encontrado == -1) && (i < sizeof(directorio)); i++)
+   {
+      if(strcmp(directorio[i].dir_nfich, nombre) == 0)
+      {
+         encontrado = i;
+      }
+   }
+   return encontrado;
+}
+
+void renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombreantiguo, char *nombrenuevo)
+{
+   int posicionNombreAntiguo = -1, posicionNombreNuevo = -1;
+   posicionNombreAntiguo = buscaFich(directorio, inodos, nombreantiguo);
+   posicionNombreNuevo = buscaFich(directorio, inodos, nombrenuevo);
+   //Comprobar que el fichero a renombrar existe
+   if(posicionNombreAntiguo == -1)
+   {
+      printf("ERROR: Fichero %s no encontrado\n", nombreantiguo);
+   }
+   //Comprobar que no existe un fichero con el nombre nuevo a renombrar
+   else if(posicionNombreNuevo != -1)
+   {
+      printf("ERROR: El fichero %s ya existe\n", nombrenuevo);
+   }
+   else
+   {
+      memcpy(directorio[posicionNombreAntiguo].dir_nfich, nombrenuevo, LEN_NFICH); //Cambio de nombre exitoso
+      printf("El nombre de %s se ha cambiado a %s con éxito.\n", nombreantiguo, nombrenuevo);
+   }
+}
+
 void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, char *nombre, FILE *fich)
 {
    int inodo_a_eliminar = -1, salir = 0;
@@ -219,7 +260,7 @@ void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *
       printf("Error: fichero no encontrado\n");  
    }
    //Liberar el inodo correspondiente
-   if (inodo_a_eliminar != NULL_INODO) 
+   if (inodo_a_eliminar != NULL_INODO)
    {
       EXT_SIMPLE_INODE *inodo = &inodos->blq_inodos[inodo_a_eliminar];
       //Se marca el inodo como libre en el bytemap de inodos
@@ -254,20 +295,4 @@ void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *
          salir = 1;
       }
    }  
-}
-
-int BuscaFich(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombre)  //Devuelve el índice del fichero en el directorio si lo encuentra, y 0 si no
-{
-   int encontrado = -1;
-
-   //Recorre los nombres hasta que lo encuentre. Si no lo encuentra, se queda en -1
-   for(int i = 0; i < sizeof(directorio); i++)
-   {
-      if(strcmp(directorio[i].dir_nfich, nombre) == 0)
-      {
-         encontrado = i;
-      }
-   }
-
-   return encontrado;
 }
