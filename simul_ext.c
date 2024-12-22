@@ -88,6 +88,11 @@ int main()
       {
          PrintBytemaps(&ext_bytemaps);
       }
+      else if(strcmp(orden, "remove")==0)
+      {
+         Borrar(directorio, &ext_blq_inodos, &ext_bytemaps, &ext_superblock, argumento1, fent);
+         
+      }
         
       // Escritura de metadatos en comandos rename, remove, copy     
       //Grabarinodosydirectorio(&directorio,&ext_blq_inodos,fent);
@@ -213,4 +218,73 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos)
          printf("\n");
       }
    }
+}
+
+int Borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, char *nombre, FILE *fich)
+{
+   int inodo_a_eliminar = -1, salir = 0;
+
+   //Buscar si existe el fichero a eliminar
+   for (int i = 0; i < MAX_FICHEROS && !salir; i++) 
+   {
+      if (strcmp(directorio[i].dir_nfich, nombre) == 0) 
+      {
+         inodo_a_eliminar = directorio[i].dir_inodo;
+         salir = 1;
+      }
+   }
+
+   //Si no se encuentra el fichero, devuelve un error
+   if (inodo_a_eliminar == -1) 
+   {
+      printf("Error: fichero no encontrado\n");
+      return -1;  
+   }
+
+   //Liberar el inodo correspondiente
+   if (inodo_a_eliminar != NULL_INODO) 
+   {
+      EXT_SIMPLE_INODE *inodo = &inodos->blq_inodos[inodo_a_eliminar];
+
+      //Se marca el inodo como libre en el bytemap de inodos
+      ext_bytemaps->bmap_inodos[inodo_a_eliminar] = 0;
+
+      //Establecer el tamaño del fichero a 0
+      inodo->size_fichero = 0;
+
+      
+
+      //Liberamos los bloques de datos
+      for (int i = 0; i < MAX_NUMS_BLOQUE_INODO; i++) 
+      {
+         if (inodo->i_nbloque[i] != NULL_BLOQUE) 
+         {
+            ext_superblock->s_free_blocks_count++;  //Los bloques liberados ahora los pueden usar otros ficheros
+            ext_bytemaps->bmap_bloques[inodo->i_nbloque[i]] = 0;
+         }
+      }
+
+      //Marcar los punteros de bloques como libres 
+      for (int i = 0; i < MAX_NUMS_BLOQUE_INODO; i++) 
+      {
+         inodo->i_nbloque[i] = NULL_BLOQUE;
+      }
+
+      ext_superblock->s_free_inodes_count++;  //El inodo queda libre también
+   }
+
+   //Eliminar la entrada del directorio
+   salir =0;
+   for (int i = 0; i < MAX_FICHEROS && !salir; i++) 
+   {
+      if (directorio[i].dir_inodo == inodo_a_eliminar) 
+      {
+         //Poner el nombre vacío y el número de inodo a NULL_INODO
+         memset(directorio[i].dir_nfich, 0, LEN_NFICH);
+         directorio[i].dir_inodo = NULL_INODO;
+         salir =1;
+      }
+   }
+
+   return 0;  
 }
