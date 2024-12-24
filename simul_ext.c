@@ -26,6 +26,8 @@ int palabraEnLista(char *palabra, char **lista, int tamLista);
 
 char *listaComandos[NUM_COMANDOS] = {"bytemaps", "copy", "dir", "info", "imprimir", "rename", "remove", "salir"};
 
+unsigned int primer_bloque_datos;
+
 int main()
 {
 	char *comando = NULL;
@@ -53,7 +55,8 @@ int main()
    memcpy(&ext_bytemaps,(EXT_BLQ_INODOS *)&datosfich[1], SIZE_BLOQUE);
    memcpy(&ext_blq_inodos,(EXT_BLQ_INODOS *)&datosfich[2], SIZE_BLOQUE);
    memcpy(&memdatos,(EXT_DATOS *)&datosfich[4],MAX_BLOQUES_DATOS*SIZE_BLOQUE);
-     
+   
+   primer_bloque_datos = ext_superblock.s_first_data_block;
    // Buce de tratamiento de comandos
    for (;;)
    {
@@ -369,7 +372,8 @@ int imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_DATOS *mem
 
          if (inodo.i_nbloque[i] != NULL_BLOQUE)
          {
-            printf("%s", memdatos[inodo.i_nbloque[i]].dato);  //Imprime los contenidos de los bloques
+            //Como memdatos tiene los bloques de datos, hay que restar al índice (que es de todos los bloques) el indice del primer bloque de datos
+            printf("%s", memdatos[inodo.i_nbloque[i] - primer_bloque_datos].dato);  //Imprime los contenidos de los bloques
          }
          
       }
@@ -450,7 +454,7 @@ int copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *e
             inodo_destino->i_nbloque[i] = j;
 
             
-            memcpy(memdatos[j].dato, memdatos[inodo_origen->i_nbloque[i]].dato, SIZE_BLOQUE);
+            memcpy(memdatos[j-primer_bloque_datos].dato, memdatos[inodo_origen->i_nbloque[i]-primer_bloque_datos].dato, SIZE_BLOQUE);
             salir = 1;
 
             //Si el bloque está libre, se lo asignamos y copiamos la información
