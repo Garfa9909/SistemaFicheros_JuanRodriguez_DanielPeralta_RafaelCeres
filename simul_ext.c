@@ -417,6 +417,12 @@ int copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *e
       return -1; 
    }
 
+   if (ext_superblock->s_free_blocks_count < bloques_necesarios)   //Si no hay bloques suficientes
+   {
+      printf("ERROR: No hay bloques suficientes para copiar el fichero.\n");
+      return -1;
+   }
+
    for (int i = 0; i < MAX_INODOS && nuevo_inodo == -1; i++)   
    {
       if (ext_bytemaps->bmap_inodos[i] == 0) 
@@ -438,11 +444,7 @@ int copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *e
    //Copiamos también los bloques
    int bloques_necesarios = (inodo_origen->size_fichero + SIZE_BLOQUE - 1)/SIZE_BLOQUE;
 
-   if (ext_superblock->s_free_blocks_count < bloques_necesarios)   //Si no hay bloques suficientes
-   {
-      printf("ERROR: No hay bloques suficientes para copiar el fichero.\n");
-      return -1;
-   }
+   
    
    for (int i = 0; i < bloques_necesarios; i++) 
    {
