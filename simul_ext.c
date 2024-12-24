@@ -353,6 +353,7 @@ void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *
          salir = 1;
          }
       }  
+      printf("Fichero borrado con exito\n");
    }
    
 }
