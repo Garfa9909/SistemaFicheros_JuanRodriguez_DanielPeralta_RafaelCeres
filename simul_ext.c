@@ -417,6 +417,10 @@ int copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *e
       return -1; 
    }
 
+   EXT_SIMPLE_INODE *inodo_origen = &inodos->blq_inodos[directorio[indice_origen].dir_inodo];
+
+   int bloques_necesarios = (inodo_origen->size_fichero + SIZE_BLOQUE - 1)/SIZE_BLOQUE;
+
    if (ext_superblock->s_free_blocks_count < bloques_necesarios)   //Si no hay bloques suficientes
    {
       printf("ERROR: No hay bloques suficientes para copiar el fichero.\n");
@@ -434,17 +438,11 @@ int copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *e
    }
 
 
-   //Inodo del fichero origen
-   EXT_SIMPLE_INODE *inodo_origen = &inodos->blq_inodos[directorio[indice_origen].dir_inodo];
-
    //Creamos un nuevo inodo para el fichero destino y copiamos el inodo del fichero destino
    EXT_SIMPLE_INODE *inodo_destino = &inodos->blq_inodos[nuevo_inodo];
    memcpy(inodo_destino, inodo_origen, sizeof(EXT_SIMPLE_INODE)); 
 
    //Copiamos también los bloques
-   int bloques_necesarios = (inodo_origen->size_fichero + SIZE_BLOQUE - 1)/SIZE_BLOQUE;
-
-   
    
    for (int i = 0; i < bloques_necesarios; i++) 
    {
