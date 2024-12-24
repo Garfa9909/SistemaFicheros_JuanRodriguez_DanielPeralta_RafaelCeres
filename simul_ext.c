@@ -298,6 +298,7 @@ void renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombre
 void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, char *nombre, FILE *fich)
 {
    int inodo_a_eliminar = -1, salir = 0;
+   
    //Buscar si existe el fichero a eliminar
    for (int i = 0; i < MAX_FICHEROS && !salir; i++) 
    {
@@ -307,13 +308,14 @@ void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *
          salir = 1;
       }
    }
+
    //Si no se encuentra el fichero, devuelve un error
    if (inodo_a_eliminar == -1) 
    {
       printf("Error: fichero no encontrado\n");  
    }
    //Liberar el inodo correspondiente
-   if (inodo_a_eliminar != NULL_INODO)
+   else (inodo_a_eliminar != NULL_INODO)
    {
       EXT_SIMPLE_INODE *inodo = &inodos->blq_inodos[inodo_a_eliminar];
       //Se marca el inodo como libre en el bytemap de inodos
@@ -335,19 +337,21 @@ void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *
          inodo->i_nbloque[i] = NULL_BLOQUE;
       }
       ext_superblock->s_free_inodes_count++;  //El inodo queda libre también
-   }
-   //Eliminar la entrada del directorio
-   salir = 0;
-   for (int i = 0; i < MAX_FICHEROS && !salir; i++) 
-   {
-      if (directorio[i].dir_inodo == inodo_a_eliminar) 
+
+      //Eliminar la entrada del directorio
+      salir = 0;
+      for (int i = 0; i < MAX_FICHEROS && !salir; i++) 
       {
+         if (directorio[i].dir_inodo == inodo_a_eliminar) 
+         {
          //Poner el nombre vacío y el número de inodo a NULL_INODO
          memset(directorio[i].dir_nfich, 0, LEN_NFICH);
          directorio[i].dir_inodo = NULL_INODO;
          salir = 1;
-      }
-   }  
+         }
+      }  
+   }
+   
 }
 
 int imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_DATOS *memdatos, char *nombre)
