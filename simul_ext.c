@@ -315,7 +315,7 @@ void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *
       printf("Error: fichero no encontrado\n");  
    }
    //Liberar el inodo correspondiente
-   else (inodo_a_eliminar != NULL_INODO)
+   else
    {
       EXT_SIMPLE_INODE *inodo = &inodos->blq_inodos[inodo_a_eliminar];
       //Se marca el inodo como libre en el bytemap de inodos
