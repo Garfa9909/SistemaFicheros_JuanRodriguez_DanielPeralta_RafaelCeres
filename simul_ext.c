@@ -16,11 +16,11 @@ void renombrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, char *nombre
 int imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_DATOS *memdatos, char *nombre);
 void borrar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, char *nombre,  FILE *fich);
 int copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *ext_bytemaps, EXT_SIMPLE_SUPERBLOCK *ext_superblock, EXT_DATOS *memdatos, char *nombreorigen, char *nombredestino,  FILE *fich);
-void GrabarDirectorio(EXT_ENTRADA_DIR *directorio, FILE *fich);
-void GrabarInodos(EXT_BLQ_INODOS *inodos, FILE *fich);
-void GrabarByteMaps(EXT_BYTE_MAPS *ext_bytemaps, FILE *fich);
-void GrabarSuperBloque(EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich);
-void GrabarDatos(EXT_DATOS *memdatos, FILE *fich);
+void grabarDirectorio(EXT_ENTRADA_DIR *directorio, FILE *fich);
+void grabarInodos(EXT_BLQ_INODOS *inodos, FILE *fich);
+void grabarByteMaps(EXT_BYTE_MAPS *ext_bytemaps, FILE *fich);
+void grabarSuperBloque(EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich);
+void grabarDatos(EXT_DATOS *memdatos, FILE *fich);
 char *leeLinea(int tam);
 int palabraEnLista(char *palabra, char **lista, int tamLista);
 
@@ -45,7 +45,7 @@ int main()
    FILE *fent = NULL;
      
    // Lectura del fichero completo de una sola vez
-   fent = fopen("particion.bin","r+b");
+   fent = fopen("particion.bin","rb+");
    fread(&datosfich, SIZE_BLOQUE, MAX_BLOQUES_PARTICION, fent);    
 
    memcpy(&ext_superblock,(EXT_SIMPLE_SUPERBLOCK *)&datosfich[0], SIZE_BLOQUE);
@@ -146,11 +146,11 @@ int main()
          if (grabardatos)
          {
             fent = fopen("particion.bin","w+b");
-            GrabarSuperBloque(&ext_superblock, fent);
-            GrabarDirectorio(directorio, fent);
-            GrabarByteMaps(&ext_bytemaps, fent);
-            GrabarInodos(&ext_blq_inodos, fent);
-            GrabarDatos(memdatos, fent);
+            grabarSuperBloque(&ext_superblock, fent);
+            grabarDirectorio(directorio, fent);
+            grabarByteMaps(&ext_bytemaps, fent);
+            grabarInodos(&ext_blq_inodos, fent);
+            grabarDatos(memdatos, fent);
          }
 
          return 0;
@@ -476,30 +476,30 @@ int copiar(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_BYTE_MAPS *e
 
 //Funciones para grabar los datos en la particion una vez se termina de usar
 
-void GrabarDirectorio(EXT_ENTRADA_DIR *directorio, FILE *fich) 
+void grabarDirectorio(EXT_ENTRADA_DIR *directorio, FILE *fich) 
 {
    fseek(fich, SIZE_BLOQUE * 3, SEEK_SET); 
    fwrite(directorio, SIZE_BLOQUE, 1, fich);
 }
 
-void GrabarInodos(EXT_BLQ_INODOS *inodos, FILE *fich) 
+void grabarInodos(EXT_BLQ_INODOS *inodos, FILE *fich) 
 {
    fseek(fich, SIZE_BLOQUE * 2, SEEK_SET); 
    fwrite(inodos, SIZE_BLOQUE, 1, fich);
 }
 
-void GrabarByteMaps(EXT_BYTE_MAPS *ext_bytemaps, FILE *fich) 
+void grabarByteMaps(EXT_BYTE_MAPS *ext_bytemaps, FILE *fich) 
 {
    fseek(fich, SIZE_BLOQUE * 1, SEEK_SET); 
    fwrite(ext_bytemaps, SIZE_BLOQUE, 1, fich);
 }
 
-void GrabarSuperBloque(EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich) 
+void grabarSuperBloque(EXT_SIMPLE_SUPERBLOCK *ext_superblock, FILE *fich) 
 {
    fwrite(ext_superblock, SIZE_BLOQUE, 1, fich);
 }
 
-void GrabarDatos(EXT_DATOS *memdatos, FILE *fich) 
+void grabarDatos(EXT_DATOS *memdatos, FILE *fich) 
 {
    fseek(fich, SIZE_BLOQUE * 4, SEEK_SET);
    fwrite(memdatos, SIZE_BLOQUE, MAX_BLOQUES_DATOS, fich);
